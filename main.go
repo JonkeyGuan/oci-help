@@ -1,24 +1,24 @@
 /*
-  甲骨文云API文档
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/
+甲骨文云API文档
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/
 
-  实例:
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Instance/
-  VCN:
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Vcn/
-  Subnet:
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Subnet/
-  VNIC:
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Vnic/
-  VnicAttachment:
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/VnicAttachment/
-  私有IP
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/PrivateIp/
-  公共IP
-  https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/PublicIp/
+实例:
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Instance/
+VCN:
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Vcn/
+Subnet:
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Subnet/
+VNIC:
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/Vnic/
+VnicAttachment:
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/VnicAttachment/
+私有IP
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/PrivateIp/
+公共IP
+https://docs.oracle.com/en-us/iaas/api/#/en/iaas/20160918/PublicIp/
 
-  获取可用性域
-  https://docs.oracle.com/en-us/iaas/api/#/en/identity/20160918/AvailabilityDomain/ListAvailabilityDomains
+获取可用性域
+https://docs.oracle.com/en-us/iaas/api/#/en/identity/20160918/AvailabilityDomain/ListAvailabilityDomains
 */
 package main
 
@@ -107,6 +107,8 @@ type Instance struct {
 	CloudInit              string  `ini:"cloud-init"`
 	MinTime                int32   `ini:"minTime"`
 	MaxTime                int32   `ini:"maxTime"`
+	MinTime429             int32   `ini:"minTime429"`
+	MaxTime429             int32   `ini:"maxTime429"`
 }
 
 type Message struct {
@@ -816,6 +818,7 @@ func listLaunchInstanceTemplates() {
 	if len(instanceSections) == 0 {
 		fmt.Printf("\033[1;31m未找到实例模版, 回车返回上一级菜单.\033[0m")
 		fmt.Scanln()
+
 		showMainMenu()
 		return
 	}
@@ -1103,6 +1106,8 @@ func LaunchInstances(ads []identity.AvailabilityDomain) (sum, num int32) {
 
 	minTime := instance.MinTime
 	maxTime := instance.MaxTime
+	minTime429 := instance.MinTime429
+	maxTime429 := instance.MaxTime429
 
 	SKIP_RETRY_MAP := make(map[int32]bool)
 	var usableAdsTemp = make([]identity.AvailabilityDomain, 0)
@@ -1247,7 +1252,11 @@ func LaunchInstances(ads []identity.AvailabilityDomain) (sum, num int32) {
 				}
 			}
 
-			sleepRandomSecond(minTime, maxTime)
+			if isServErr && servErr.GetHTTPStatusCode() == 429 {
+				sleepRandomSecond(minTime429, maxTime429)
+			} else {
+				sleepRandomSecond(minTime, maxTime)
+			}
 
 			if AD_NOT_FIXED {
 				if !EACH_AD {
