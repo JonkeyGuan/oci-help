@@ -1,9 +1,14 @@
 module oci-help
 
-go 1.17
+go 1.21
 
 require (
-	github.com/oracle/oci-go-sdk/v54 v54.0.0
-	github.com/sony/gobreaker v0.4.2-0.20210216022020-dd874f9dd33b // indirect
-	gopkg.in/ini.v1 v1.63.2
+	github.com/oracle/oci-go-sdk/v65 v65.62.0
+	gopkg.in/ini.v1 v1.67.0
+)
+
+require (
+	github.com/gofrs/flock v0.8.1 // indirect
+	github.com/sony/gobreaker v0.5.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 )

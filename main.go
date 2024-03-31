@@ -43,10 +43,10 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/oracle/oci-go-sdk/v54/common"
-	"github.com/oracle/oci-go-sdk/v54/core"
-	"github.com/oracle/oci-go-sdk/v54/example/helpers"
-	"github.com/oracle/oci-go-sdk/v54/identity"
+	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/core"
+	"github.com/oracle/oci-go-sdk/v65/example/helpers"
+	"github.com/oracle/oci-go-sdk/v65/identity"
 	"gopkg.in/ini.v1"
 )
 
