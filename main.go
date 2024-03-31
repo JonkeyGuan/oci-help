@@ -109,6 +109,7 @@ type Instance struct {
 	MaxTime                int32   `ini:"maxTime"`
 	MinTime429             int32   `ini:"minTime429"`
 	MaxTime429             int32   `ini:"maxTime429"`
+	Exponential429         float32 `ini:"exponential429"`
 }
 
 type Message struct {
@@ -1108,6 +1109,9 @@ func LaunchInstances(ads []identity.AvailabilityDomain) (sum, num int32) {
 	maxTime := instance.MaxTime
 	minTime429 := instance.MinTime429
 	maxTime429 := instance.MaxTime429
+	exponential429 := instance.Exponential429
+
+	var count429 int32 = 0
 
 	SKIP_RETRY_MAP := make(map[int32]bool)
 	var usableAdsTemp = make([]identity.AvailabilityDomain, 0)
@@ -1253,8 +1257,10 @@ func LaunchInstances(ads []identity.AvailabilityDomain) (sum, num int32) {
 			}
 
 			if isServErr && servErr.GetHTTPStatusCode() == 429 {
-				sleepRandomSecond(minTime429, maxTime429)
+				count429++
+				sleepRandomSecondWithExponential(minTime429, maxTime429, exponential429, int16(count429))
 			} else {
+				count429 = 0
 				sleepRandomSecond(minTime, maxTime)
 			}
 
@@ -1333,6 +1339,20 @@ func LaunchInstances(ads []identity.AvailabilityDomain) (sum, num int32) {
 		}
 	}
 	return
+}
+
+func sleepRandomSecondWithExponential(min int32, max int32, exponential float32, count429 int16) {
+	var second int32
+	if min <= 0 || max <= 0 {
+		second = 1
+	} else if min >= max {
+		second = max
+	} else {
+		second = rand.Int31n(max-min) + min
+	}
+	second = int32(float64(second) * math.Pow(float64(exponential), float64(count429-1)))
+	printf("Sleep %d Second...\n", second)
+	time.Sleep(time.Duration(second) * time.Second)
 }
 
 func sleepRandomSecond(min, max int32) {
